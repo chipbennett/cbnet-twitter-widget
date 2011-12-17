@@ -3,7 +3,7 @@
  * Plugin Name: cbnet Twitter Widget
  * Plugin URI: http://www.chipbennett.net/wordpress/plugins/cbnet-twitter-widget/
  * Description: A widget that displays tweets from any Twitter profile, list, favorites, or search.
- * Version: 1.1
+ * Version: 1.2
  * Author: chipbennett
  * Author URI: http://www.chipbennett.net/
  *
@@ -24,21 +24,25 @@
  */
 
 /**
- * Add function to admin_notices to load.
+ * Define widget paths for admin notices
+ * @since 1.2
+ */
+function cbnet_twitter_widget_admin_init() {
+	define( 'CBNET_PROFILE_WIDGET_PLUGIN', 'cbnet-twitter-profile-display/cbnet-twitter-profile-display.php' );
+	define( 'CBNET_PROFILE_WIDGET_PATH', WP_PLUGIN_DIR . '/' . CBNET_PROFILE_WIDGET_PLUGIN );
+	define( 'CBNET_LIST_WIDGET_PLUGIN', '/cbnet-twitter-list-display/cbnet-twitter-list-display.php' );
+	define( 'CBNET_LIST_WIDGET_PATH', WP_PLUGIN_DIR . '/' . CBNET_LIST_WIDGET_PLUGIN );
+	define( 'CBNET_FAVES_WIDGET_PLUGIN', '/cbnet-twitter-faves-display/cbnet-twitter-faves-display.php' );
+	define( 'CBNET_FAVES_WIDGET_PATH', WP_PLUGIN_DIR . '/' . CBNET_FAVES_WIDGET_PLUGIN );
+	define( 'CBNET_SEARCH_WIDGET_PLUGIN', '/cbnet-twitter-search-display/cbnet-twitter-search-display.php' );
+	define( 'CBNET_SEARCH_WIDGET_PATH', WP_PLUGIN_DIR . '/' . CBNET_SEARCH_WIDGET_PLUGIN );
+}
+add_action( 'admin_init', 'cbnet_twitter_widget_admin_init' );
+
+/**
+ * Add admin notices for obsolete widgets
  * @since 1.1
  */
-
-define( CBNET_PROFILE_WIDGET_PLUGIN, 'cbnet-twitter-profile-display/cbnet-twitter-profile-display.php' );
-define( CBNET_PROFILE_WIDGET_PATH, WP_PLUGIN_DIR . '/' . CBNET_PROFILE_WIDGET_PLUGIN );
-define( CBNET_LIST_WIDGET_PLUGIN, '/cbnet-twitter-list-display/cbnet-twitter-list-display.php' );
-define( CBNET_LIST_WIDGET_PATH, WP_PLUGIN_DIR . '/' . CBNET_LIST_WIDGET_PLUGIN );
-define( CBNET_FAVES_WIDGET_PLUGIN, '/cbnet-twitter-faves-display/cbnet-twitter-faves-display.php' );
-define( CBNET_FAVES_WIDGET_PATH, WP_PLUGIN_DIR . '/' . CBNET_FAVES_WIDGET_PLUGIN );
-define( CBNET_SEARCH_WIDGET_PLUGIN, '/cbnet-twitter-search-display/cbnet-twitter-search-display.php' );
-define( CBNET_SEARCH_WIDGET_PATH, WP_PLUGIN_DIR . '/' . CBNET_SEARCH_WIDGET_PLUGIN );
-
-add_action('admin_notices', 'cbnet_twitter_widget_admin_notices');
-
 function cbnet_twitter_widget_admin_notices() {
 	$cbnet_old_widgets = array( 
 		array( 'plugin' => CBNET_PROFILE_WIDGET_PLUGIN, 'path' => CBNET_PROFILE_WIDGET_PATH, 'name' => 'cbnet Twitter Profile Display' ),
@@ -54,6 +58,7 @@ function cbnet_twitter_widget_admin_notices() {
 		}
 	}
 }
+add_action( 'admin_notices', 'cbnet_twitter_widget_admin_notices' );
 
 /**
  * Add function to widgets_init that'll load our widget.
@@ -62,8 +67,7 @@ function cbnet_twitter_widget_admin_notices() {
 add_action( 'widgets_init', 'cbnet_twitter_widget_load_widget' );
 
 /**
- * Register our widget.
- * 'Example_Widget' is the widget class used below.
+ * Register cbnet Twitter Widget
  *
  * @since 1.0
  */
@@ -76,7 +80,6 @@ function cbnet_twitter_widget_load_widget() {
  *
  * @since 1.0
  */
-
 class widget_cbnet_twitter_widget extends WP_Widget {
 
     function widget_cbnet_twitter_widget() {
@@ -193,9 +196,9 @@ new TWTR.Widget({
     }
 
     function form( $instance ) {
-		$defaults = array( 'title' => '', 'twitteruserid' => '', 'twitteruserlist' => '', 'twittersearch' => '',  'widgettitle' => '',  'widgetdesc' => '', 'shellbg' => '#cccccc', 'shellcolor' => '#ffffff', 'tweetbg' => '#ffffff', 'tweetcolor' => '#444444', 'tweetlink' => '#5588aa', 'scrollbar' => 'true', 'loop' => 'false', 'live' => 'true', 'hashtags' => 'true', 'timestamp' => 'true', 'avatars' => 'true', 'behavior' => 'all', 'interval' => '6000', 'rpp' => '4', 'widthauto' => 'false', 'width' => '150', 'height' => '300' );
+		$defaults = array( 'title' => '', 'widgettype' => 'profile', 'twitteruserid' => '', 'twitteruserlist' => '', 'twittersearch' => '',  'typetitle' => '',  'typedesc' => '', 'shellbg' => '#cccccc', 'shellcolor' => '#ffffff', 'tweetbg' => '#ffffff', 'tweetcolor' => '#444444', 'tweetlink' => '#5588aa', 'scrollbar' => 'true', 'loop' => 'false', 'live' => 'true', 'hashtags' => 'true', 'timestamp' => 'true', 'avatars' => 'true', 'behavior' => 'all', 'interval' => '6000', 'rpp' => '4', 'widthauto' => 'false', 'width' => '150', 'height' => '300' );
         $instance = wp_parse_args( (array) $instance, $defaults );
-?>
+		?>
 <p>
 <label for="<?php echo $this->get_field_id('title'); ?>">Title (Heading):</label> 
 <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $instance['title']; ?>" />
@@ -205,11 +208,11 @@ new TWTR.Widget({
 </p>
 <p>
 <label for="<?php echo $this->get_field_id('widgettype'); ?>">Widget Type:</label> 
-<select class="widefat" id="<?php echo $this->get_field_id('widgettype'); ?>" name="<?php echo $this->get_field_name('widgettype'); ?>" type="text" value="<?php echo $instance['widgettype']; ?>" >
-  <option <?php if ( 'profile' == $instance['widgettype'] ) echo 'selected="selected"'; ?> value="profile">Profile</option>
-  <option <?php if ( 'list' == $instance['widgettype'] ) echo 'selected="selected"'; ?> value="list">List</option>
-  <option <?php if ( 'faves' == $instance['widgettype'] ) echo 'selected="selected"'; ?> value="faves">Favorites</option>
-  <option <?php if ( 'search' == $instance['widgettype'] ) echo 'selected="selected"'; ?> value="search">Search</option>
+<select name="<?php echo $this->get_field_name('widgettype'); ?>" style="width:100%;">
+  <option <?php selected( 'profile' == $instance['widgettype'] ); ?> value="profile">Profile</option>
+  <option <?php selected( 'list' == $instance['widgettype'] ); ?> value="list">List</option>
+  <option <?php selected( 'faves' == $instance['widgettype'] ); ?> value="faves">Favorites</option>
+  <option <?php selected( 'search' == $instance['widgettype'] ); ?> value="search">Search</option>
 </select>
 </p>
 <p>
@@ -252,10 +255,10 @@ new TWTR.Widget({
 <label for="<?php echo $this->get_field_id( 'scrollbar' ); ?>">Include Scrollbar?</label>
 </p>
 <p>
-<label for="<?php echo $this->get_field_id( 'behavior' ); ?>"><?php _e('Behavior:', '(load all/loop)'); ?></label> 
-<select id="<?php echo $this->get_field_id( 'behavior' ); ?>" name="<?php echo $this->get_field_name( 'behavior' ); ?>" class="widefat" style="width:100%;">
-	<option value="all" <?php if ( 'all' == $instance['behavior'] ) echo 'selected="selected"'; ?>>Load All Tweets</option>
-	<option value="default" <?php if ( 'default' == $instance['behavior'] ) echo 'selected="selected"'; ?>>Timed Interval</option>
+<label for="<?php echo $this->get_field_id( 'behavior' ); ?>"><?php _e( 'Behavior (load all/loop):' ); ?></label> 
+<select name="<?php echo $this->get_field_name( 'behavior' ); ?>" style="width:100%;">
+	<option value="all" <?php selected( 'all' == $instance['behavior'] ); ?>>Load All Tweets</option>
+	<option value="default" <?php selected( 'default' == $instance['behavior'] ); ?>>Timed Interval</option>
 </select>
 </p>
 <p style="margin-left:15px;">
@@ -325,7 +328,7 @@ Note: enter all colors as HEX values (e.g. #ffffff for white)
 <label for="<?php echo $this->get_field_id('height'); ?>">Height (pixels):</label> 
 <input class="widefat" id="<?php echo $this->get_field_id('height'); ?>" name="<?php echo $this->get_field_name('height'); ?>" type="text" value="<?php echo $instance['height']; ?>" />
 </p>
-<?php
+		<?php
     }
 }
 ?>
